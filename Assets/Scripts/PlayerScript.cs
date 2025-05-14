@@ -10,12 +10,15 @@ public class PlayerScript : MonoBehaviour
 
     public bool jump = true;
     public int power = 1000;
+    public bool die = true;
 
     public Rigidbody rb;
     public Animator anim;
     public TextMeshProUGUI textcoin;
     public GameObject win;
     public GameObject lose;
+    public Camera dieCamera;
+    public Camera normalCamera;
 
     [Range(0.1f, 9f)] [SerializeField] float sensitivity = 0.5f;
     [Range(30f, 90f)] [SerializeField] float MaxVerticalAngle = 45f;
@@ -24,7 +27,7 @@ public class PlayerScript : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.lockState = CursorLockMode.Locked;
         coins = 0;
         textcoin.text = "Монеты: "+coins.ToString();
     }
@@ -55,7 +58,7 @@ public class PlayerScript : MonoBehaviour
         MoveDeraction.y = 0;
         MoveDeraction.Normalize();
 
-        if (MoveDeraction.magnitude>0.1f)
+        if (die && MoveDeraction.magnitude>0.1f)
         {
             transform.position += MoveDeraction.normalized*speed*Time.deltaTime;
             anim.SetBool("Run",true);
@@ -65,7 +68,7 @@ public class PlayerScript : MonoBehaviour
             anim.SetBool("Run",false);
         }
 
-        if (jump&&Input.GetKey(KeyCode.Space))
+        if (jump && die && Input.GetKey(KeyCode.Space))
         {
             rb.AddForce(Vector3.up*power,ForceMode.Impulse);
             jump = false;
@@ -81,8 +84,10 @@ public class PlayerScript : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Obstacle"))
         {
+            dieCamera.enabled = true;
+            die = false;
             lose.SetActive(true);
-            transform.position = new Vector3(-143, 38, 92);
+            Cursor.lockState = CursorLockMode.None;
         }
 
         if (collision.gameObject.CompareTag("Coin"))
